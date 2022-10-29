@@ -16,4 +16,4 @@ jobs:
 
       - run:  docker-compose -f docker-compose.ci.yml up -d
 
-      - run:  docker exec -it server-puppeteer-ci yarn test
+      - run:  docker exec server-puppeteer-ci yarn test
