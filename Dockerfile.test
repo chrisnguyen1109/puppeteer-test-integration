@@ -1,0 +1,34 @@
+FROM node:16-alpine
+
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    nodejs \
+    yarn
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser    
+
+USER node
+
+RUN mkdir -p /home/node/app
+
+RUN chown node:node /home/node/app
+
+WORKDIR /home/node/app
+
+COPY --chown=node:node package.json ./
+
+COPY --chown=node:node yarn.lock ./
+
+RUN yarn
+
+COPY --chown=node:node . ./
+
+EXPOSE 3001
+
+CMD [ "yarn", "dev" ]

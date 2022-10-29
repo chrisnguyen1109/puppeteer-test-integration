@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  redis-test:
+    image: redis
+    restart: always
+    ports:
+      - 6381:6379     
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+    volumes:
+      - /home/node/app/node_modules    
+      - .:/home/node/app
+    ports:
+      - 3001:3001
+    depends_on:
+      - redis-test     

@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  redis:
+    image: redis
+    restart: always   
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+    environment:
+      - NODE_ENV=ci
+    depends_on:
+      - redis    
