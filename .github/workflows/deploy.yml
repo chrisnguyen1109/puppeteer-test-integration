@@ -1,0 +1,19 @@
+name: Run e2e test
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2    
+
+      - run:  docker-compose -f docker-compose.ci.yml up
+
+      - run:  docker exec -it server-puppeteer-ci yarn test
