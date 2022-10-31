@@ -1,3 +1,3 @@
 require('dotenv').config({
-    path: '.env.test',
+    path: `.env.${process.env.NODE_ENV}`,
 });
