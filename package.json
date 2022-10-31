@@ -9,8 +9,8 @@
         "build:server": "tsc --project tsconfig.build.json",
         "build": "yarn build:client && yarn build:server",
         "start": "node dist/server.js",
-        "test:watch": "jest --watchAll",
-        "test": "jest"
+        "test:watch": "jest --watchAll --maxWorkers=1",
+        "test": "jest --maxWorkers=1"
     },
     "dependencies": {
         "@types/uuid": "^8.3.4",

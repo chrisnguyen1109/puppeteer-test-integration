@@ -1,41 +1,40 @@
-require('dotenv').config({
-    path: '.env.test',
-});
-import puppeteer, { Browser, Page } from 'puppeteer';
-import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
-import { JWT_SECRET } from '../src/configs';
+import puppeteer, { Browser, Page, Target } from 'puppeteer';
+import { PORT } from '../src/configs';
+import { clearRedisDB } from '../src/loaders';
+import { CustomPage, extendPage } from './helpers';
 
 let browser: Browser;
-let page: Page;
+let page: CustomPage & Page;
 
-beforeAll(async () => {
-    jest.setTimeout(10 * 1000);
+beforeEach(async () => {
+    await clearRedisDB();
 
     browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
-        args: ['--no-sandbox', '--disable-dev-shm-usage'],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+        ],
     });
-});
+    // browser.on('targetcreated', async (target: Target) => {
+    //     const newPage = await target.page();
+    //     if (target.type() === 'page' && newPage) {
+    //         extendPage(newPage);
+    //     }
+    // });
 
-afterAll(async () => {
-    await browser.close();
-});
+    page = await CustomPage.build(browser);
 
-beforeEach(async () => {
-    page = await browser.newPage();
-    await page.goto('http://localhost:3001');
+    await page.goto(`http://server:${PORT}`);
 });
 
 afterEach(async () => {
-    await page.close();
+    await browser.close();
 });
 
 it('Header has correct text', async () => {
-    const brandSelector = '.navbar-brand';
-    await page.waitForSelector(brandSelector);
-
-    const text = await page.$eval(brandSelector, el => el.textContent);
+    const text = await page.getContentOf('.navbar-brand');
 
     expect(text).toEqual('Blogs');
 });
@@ -46,32 +45,19 @@ it('Click login starts oauth flow', async () => {
 
     await page.click(btnSelector);
 
-    const oauthPage: Page = await new Promise(resolve =>
-        browser.once('targetcreated', target => resolve(target.page()))
+    const oauthPage: Page | null = await new Promise(resolve =>
+        browser.once('targetcreated', (target: Target) =>
+            resolve(target.page())
+        )
     );
 
-    expect(oauthPage.url()).toMatch(/accounts\.google\.com/);
+    expect(oauthPage?.url()).toMatch(/accounts\.google\.com/);
 });
 
-// it("When signed in, user's name be defined", async () => {
-//     const jwtSign = promisify(jwt.sign) as any;
+it("When signed in, user's name be defined", async () => {
+    await page.login();
 
-//     const accessToken = await jwtSign(
-//         {
-//             id: '110961896453089690630',
-//         },
-//         JWT_SECRET
-//     );
+    const text = await page.getContentOf('#basic-nav-dropdown');
 
-//     await page.setCookie({
-//         name: 'access_token',
-//         value: accessToken,
-//     });
-
-//     const dropDownBtn = '#basic-nav-dropdown';
-//     await page.waitForSelector(dropDownBtn);
-
-//     const text = await page.$eval(dropDownBtn, el => el.textContent);
-
-//     expect(text).toBeDefined();
-// });
+    expect(text).toBeDefined();
+});

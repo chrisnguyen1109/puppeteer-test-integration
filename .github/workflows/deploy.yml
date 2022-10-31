@@ -15,5 +15,5 @@ jobs:
         uses: actions/checkout@v2    
 
       - run:  docker-compose -f docker-compose.ci.yml up -d
-
+      - run:  sleep 3
       - run:  docker exec server-puppeteer-ci yarn test
