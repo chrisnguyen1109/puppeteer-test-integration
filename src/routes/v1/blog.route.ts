@@ -3,6 +3,7 @@ import {
     createBlogController,
     getMyBlogsController,
     removeBlogController,
+    uploadBlogImgController,
 } from '../../controllers';
 import { checkAuth } from '../../middlewares';
 
@@ -13,3 +14,5 @@ blogRouter.use(checkAuth);
 blogRouter.route('/').post(createBlogController).get(getMyBlogsController);
 
 blogRouter.delete('/:id', removeBlogController);
+
+blogRouter.post('/upload-img', uploadBlogImgController);

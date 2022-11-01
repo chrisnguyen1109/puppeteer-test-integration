@@ -1,5 +1,6 @@
-import { Browser, Page } from 'puppeteer';
+import { Browser, ElementHandle, Page } from 'puppeteer';
 import { generateJwt, generateUser } from '../factories';
+import path from 'path';
 
 export class CustomPage {
     static async build(browser: Browser) {
@@ -53,7 +54,7 @@ export class CustomPage {
         );
     }
 
-    private async typeInput(selector: string, input: string) {
+    async typeInput(selector: string, input: string) {
         await this.page.focus(selector);
         await this.page.keyboard.type(input, { delay: 100 });
     }
@@ -61,16 +62,26 @@ export class CustomPage {
     async createBlog(title: string, content: string) {
         const titleInputSelector = 'form input[placeholder="Title"]';
         const contentInputSelector = 'form textarea[placeholder="Content"]';
+        const imageInputSelector = 'form input[type="file"]';
         const submitBtnSelector = '[type="submit"].btn.btn-primary';
 
         await Promise.all([
             this.page.waitForSelector(titleInputSelector),
             this.page.waitForSelector(contentInputSelector),
+            this.page.waitForSelector(imageInputSelector),
             this.page.waitForSelector(submitBtnSelector),
         ]);
 
         await this.typeInput(titleInputSelector, title);
         await this.typeInput(contentInputSelector, content);
+
+        const imageInputElement = (await this.page.$(
+            imageInputSelector
+        )) as ElementHandle<HTMLInputElement>;
+
+        await imageInputElement?.uploadFile(
+            path.join(__dirname, '../images/sample-blog.jpg')
+        );
 
         await Promise.all([
             this.page.click(submitBtnSelector),

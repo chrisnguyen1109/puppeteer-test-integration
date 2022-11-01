@@ -20,6 +20,8 @@ beforeEach(async () => {
 
     page = await CustomPage.build(browser);
 
+    page.on('console', message => console.log(message));
+
     await page.goto(`http://server:${PORT}`);
 });
 
